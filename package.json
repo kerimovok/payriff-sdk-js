@@ -1,0 +1,25 @@
+{
+	"name": "payriff-sdk-js",
+	"author": "Orkhan Karimov",
+	"homepage": "https://github.com/kerimovok/payriff-sdk-js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kerimovok/payriff-sdk-js.git"
+	},
+	"version": "1.0.0",
+	"description": "An unofficial TypeScript/JavaScript SDK for integrating with the Payriff payment gateway.",
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "bun build ./src/index.ts --outdir=dist --target=node --minify && bun run build:types",
+		"build:types": "tsc --emitDeclarationOnly --declaration --outDir dist"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "^5.0.0"
+	}
+}
