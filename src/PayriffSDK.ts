@@ -123,6 +123,7 @@ export interface Transaction {
 	pan: string
 	paymentWay: string
 	cardDetails: CardDetails
+	cardUuid?: string
 	merchantCategory: string
 	installment: {
 		type: string | null
