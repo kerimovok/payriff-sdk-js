@@ -4,14 +4,30 @@ An unofficial TypeScript/JavaScript SDK for integrating with the Payriff payment
 
 ## Installation
 
-Just drop the `PayriffSDK.ts` file into your project and use it.
+```bash
+npm install payriff-sdk-js
+```
+
+or
+
+```bash
+yarn add payriff-sdk-js
+```
+
+or
+
+```bash
+bun add payriff-sdk-js
+```
+
+P.S. Alternatively, you can use the SDK without installing it by copying the `PayriffSDK.ts` file into your project.
 
 ## Configuration
 
 Initialize the SDK with your merchant credentials:
 
 ```typescript
-import { PayriffSDK } from './PayriffSDK'
+import { PayriffSDK } from 'payriff-sdk-js'
 
 const payriff = new PayriffSDK({
 	// optional, defaults to https://api.payriff.com/api/v3
