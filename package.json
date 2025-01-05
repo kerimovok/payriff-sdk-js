@@ -1,12 +1,22 @@
 {
 	"name": "payriff-sdk-js",
+	"version": "1.1.0",
+	"keywords": [
+		"payriff",
+		"sdk",
+		"payment",
+		"gateway",
+		"typescript",
+		"javascript",
+		"nodejs"
+	],
 	"author": "Orkhan Karimov",
 	"homepage": "https://github.com/kerimovok/payriff-sdk-js",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/kerimovok/payriff-sdk-js.git"
 	},
-	"version": "1.0.1",
+	"license": "MIT",
 	"description": "An unofficial TypeScript/JavaScript SDK for integrating with the Payriff payment gateway.",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",

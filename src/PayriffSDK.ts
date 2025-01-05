@@ -2,40 +2,48 @@
  * Configuration options for the Payriff SDK
  * @interface PayriffConfig
  * @property {string} [baseUrl] - Optional base URL for the API (defaults to https://api.payriff.com/api/v3)
- * @property {string} secretKey - Merchant's secret key for authentication
+ * @property {string} [secretKey] - Optional Merchant's secret key for authentication (defaults to PAYRIFF_SECRET_KEY environment variable)
+ * @property {string} [language] - Optional default language for the payment page (defaults to 'AZ')
+ * @property {string} [currency] - Optional default currency for the payment page (defaults to 'AZN')
+ * @property {string} [callbackUrl] - Optional callback URL for payment result notification (defaults to PAYRIFF_CALLBACK_URL environment variable)
  */
 export interface PayriffConfig {
 	baseUrl?: string
 	secretKey?: string
+	defaultLanguage?: Language
+	defaultCurrency?: Currency
+	defaultCallbackUrl?: string
 }
 
 /**
  * Request parameters for creating a new order
- * @interface CreateOrderRequest
+ * @interface CreateOrderRequired
  * @property {number} amount - Amount of the transaction in decimal format (e.g., 10.99)
- * @property {'AZ' | 'EN' | 'RU'} language - Language code for the payment page
- * @property {string} currency - ISO 4217 currency code (e.g., 'AZN', 'USD')
  * @property {string} description - Description of the order shown to customer
- * @property {string} callbackUrl - URL where customer will be redirected after payment
- * @property {boolean} cardSave - Whether to enable card saving for future payments
- * @property {'PURCHASE' | 'PRE_AUTH'} operation - Type of payment operation
  */
-export interface CreateOrderRequest {
-	/** Amount of the transaction */
+interface CreateOrderRequired {
 	amount: number
-	/** Language code for the payment page */
-	language: 'AZ' | 'EN' | 'RU'
-	/** Currency code for the transaction */
-	currency: string
-	/** Description of the order */
 	description: string
-	/** URL to redirect after payment completion */
-	callbackUrl: string
-	/** Whether to save the card for future payments */
-	cardSave: boolean
-	/** Type of payment operation */
-	operation: 'PURCHASE' | 'PRE_AUTH'
 }
+
+/**
+ * Optional parameters for creating a new order
+ * @interface CreateOrderOptional
+ * @property {Language} [language] - Language code for the payment page ('AZ', 'EN', 'RU')
+ * @property {Currency} [currency] - ISO 4217 currency code ('AZN', 'USD', 'EUR')
+ * @property {boolean} [cardSave] - Whether to enable card saving for future payments
+ * @property {Operation} [operation] - Type of payment operation ('PURCHASE' or 'PRE_AUTH')
+ * @property {string} [callbackUrl] - Optional callback URL for payment result notification
+ */
+interface CreateOrderOptional {
+	language?: Language
+	currency?: Currency
+	cardSave?: boolean
+	operation?: Operation
+	callbackUrl?: string
+}
+
+export type CreateOrderRequest = CreateOrderRequired & CreateOrderOptional
 
 /**
  * Generic response structure from Payriff API
@@ -89,29 +97,64 @@ export interface RefundRequest {
 
 /**
  * Request parameters for automatic payment
- * @interface AutoPayRequest
+ * @interface AutoPayRequired
  * @property {string} cardUuid - Unique identifier of the saved card
  * @property {number} amount - Payment amount in decimal format
- * @property {string} currency - ISO 4217 currency code
  * @property {string} description - Payment description
- * @property {string} callbackUrl - URL for payment result notification
- * @property {'PURCHASE' | 'PRE_AUTH'} operation - Type of payment operation
  */
-export interface AutoPayRequest {
+interface AutoPayRequired {
 	cardUuid: string
 	amount: number
-	currency: string
 	description: string
-	callbackUrl: string
-	operation: 'PURCHASE' | 'PRE_AUTH'
 }
 
+/**
+ * Optional parameters for automatic payment
+ * @interface AutoPayOptional
+ * @property {Currency} [currency] - ISO 4217 currency code ('AZN', 'USD', 'EUR')
+ * @property {Operation} [operation] - Type of payment operation ('PURCHASE' or 'PRE_AUTH')
+ * @property {string} [callbackUrl] - Optional callback URL for payment result notification
+ */
+interface AutoPayOptional {
+	currency?: Currency
+	operation?: Operation
+	callbackUrl?: string
+}
+
+export type AutoPayRequest = AutoPayRequired & AutoPayOptional
+
+/**
+ * Details of a payment card
+ * @interface CardDetails
+ * @property {string} maskedPan - Masked card number (e.g., "411111******1111")
+ * @property {string} brand - Card brand/network (e.g., "VISA", "MASTERCARD")
+ * @property {string} cardHolderName - Name of the cardholder
+ */
 export interface CardDetails {
 	maskedPan: string
 	brand: string
 	cardHolderName: string
 }
 
+/**
+ * Transaction details for an order
+ * @interface Transaction
+ * @property {string} uuid - Unique identifier for the transaction
+ * @property {string} createdDate - Transaction creation timestamp
+ * @property {string} status - Current status of the transaction
+ * @property {string} channel - Payment channel used
+ * @property {string} channelType - Type of payment channel
+ * @property {string} requestRrn - Request reference number
+ * @property {string | null} responseRrn - Response reference number (if available)
+ * @property {string} pan - Masked card number
+ * @property {string} paymentWay - Method of payment
+ * @property {CardDetails} cardDetails - Detailed card information
+ * @property {string} [cardUuid] - Unique identifier for saved card (if applicable)
+ * @property {string} merchantCategory - Merchant category code
+ * @property {object} installment - Installment payment details
+ * @property {string | null} installment.type - Type of installment
+ * @property {string | null} installment.period - Installment period
+ */
 export interface Transaction {
 	uuid: string
 	createdDate: string
@@ -131,6 +174,20 @@ export interface Transaction {
 	}
 }
 
+/**
+ * Detailed information about an order
+ * @interface OrderInfo
+ * @property {string} orderId - Unique identifier of the order
+ * @property {number} amount - Total amount of the order
+ * @property {string} currencyType - Currency code used for the order
+ * @property {string} merchantName - Name of the merchant
+ * @property {string} operationType - Type of payment operation
+ * @property {string} paymentStatus - Current status of the payment
+ * @property {boolean} auto - Whether this was an automatic payment
+ * @property {string} createdDate - Order creation timestamp
+ * @property {string} description - Order description
+ * @property {Transaction[]} transactions - List of transactions for this order
+ */
 export interface OrderInfo {
 	orderId: string
 	amount: number
@@ -152,7 +209,16 @@ export class PayriffSDK {
 	private baseUrl: string
 	private headers: HeadersInit
 	private secretKey: string
+	private defaultLanguage: Language
+	private defaultCurrency: Currency
+	private defaultCallbackUrl: string
 	private static readonly DEFAULT_BASE_URL = 'https://api.payriff.com/api/v3'
+	private static readonly DEFAULT_SECRET_KEY: string =
+		process.env.PAYRIFF_SECRET_KEY || ''
+	private static readonly DEFAULT_LANGUAGE: Language = 'AZ'
+	private static readonly DEFAULT_CURRENCY: Currency = 'AZN'
+	private static readonly DEFAULT_CALLBACK_URL: string =
+		process.env.PAYRIFF_CALLBACK_URL || ''
 
 	/**
 	 * Creates an instance of PayriffSDK
@@ -160,8 +226,13 @@ export class PayriffSDK {
 	 */
 	constructor(config: PayriffConfig = {}) {
 		this.baseUrl = config.baseUrl || PayriffSDK.DEFAULT_BASE_URL
-		this.secretKey =
-			config.secretKey || process.env.PAYRIFF_SECRET_KEY || ''
+		this.secretKey = config.secretKey || PayriffSDK.DEFAULT_SECRET_KEY
+		this.defaultLanguage =
+			config.defaultLanguage || PayriffSDK.DEFAULT_LANGUAGE
+		this.defaultCurrency =
+			config.defaultCurrency || PayriffSDK.DEFAULT_CURRENCY
+		this.defaultCallbackUrl =
+			config.defaultCallbackUrl || PayriffSDK.DEFAULT_CALLBACK_URL
 		this.headers = {
 			Authorization: this.secretKey,
 			'Content-Type': 'application/json',
@@ -198,7 +269,20 @@ export class PayriffSDK {
 	async createOrder(
 		request: CreateOrderRequest
 	): Promise<PayriffResponse<OrderPayload>> {
-		return this.makeRequest<OrderPayload>('/orders', 'POST', request)
+		const defaultedRequest: CreateOrderRequest = {
+			language: this.defaultLanguage,
+			currency: this.defaultCurrency,
+			callbackUrl: this.defaultCallbackUrl,
+			cardSave: false,
+			operation: 'PURCHASE',
+			...request,
+		}
+
+		return this.makeRequest<OrderPayload>(
+			'/orders',
+			'POST',
+			defaultedRequest
+		)
 	}
 
 	/**
@@ -236,7 +320,14 @@ export class PayriffSDK {
 	async autoPay(
 		request: AutoPayRequest
 	): Promise<PayriffResponse<OrderInfo>> {
-		return this.makeRequest<OrderInfo>('/autoPay', 'POST', request)
+		const defaultedRequest: AutoPayRequest = {
+			currency: this.defaultCurrency,
+			callbackUrl: this.defaultCallbackUrl,
+			operation: 'PURCHASE',
+			...request,
+		}
+
+		return this.makeRequest<OrderInfo>('/autoPay', 'POST', defaultedRequest)
 	}
 
 	/**
@@ -250,7 +341,7 @@ export class PayriffSDK {
 }
 
 /**
- * Standard response codes from Payriff API
+ * Response codes from Payriff API
  */
 export const PayriffResultCodes = {
 	/** Operation completed successfully */
@@ -274,3 +365,13 @@ export const PayriffResultCodes = {
 	/** Invalid authentication token */
 	INVALID_TOKEN: '14014',
 } as const
+
+export const PayriffTypes = {
+	Languages: ['AZ', 'EN', 'RU'] as const,
+	Currencies: ['AZN', 'USD', 'EUR'] as const,
+	Operations: ['PURCHASE', 'PRE_AUTH'] as const,
+} as const
+
+export type Language = (typeof PayriffTypes.Languages)[number]
+export type Currency = (typeof PayriffTypes.Currencies)[number]
+export type Operation = (typeof PayriffTypes.Operations)[number]
