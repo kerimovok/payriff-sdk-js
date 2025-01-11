@@ -381,7 +381,17 @@ export const PayriffTypes = {
 	Languages: ['AZ', 'EN', 'RU'] as const,
 	Currencies: ['AZN', 'USD', 'EUR'] as const,
 	Operations: ['PURCHASE', 'PRE_AUTH'] as const,
-	Statuses: ['APPROVED', 'DECLINED', 'CANCELED', 'EXPIRED'] as const,
+	Statuses: [
+		'CREATED',
+		'APPROVED',
+		'CANCELED',
+		'DECLINED',
+		'REFUNDED',
+		'PREAUTH_APPROVED',
+		'EXPIRED',
+		'REVERSE',
+		'PARTIAL_REFUND',
+	] as const,
 } as const
 
 export type Language = (typeof PayriffTypes.Languages)[number]
