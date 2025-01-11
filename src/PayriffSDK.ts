@@ -96,6 +96,17 @@ export interface RefundRequest {
 }
 
 /**
+ * Request parameters for completing a pre-authorized payment
+ * @interface CompleteRequest
+ * @property {number} amount - Amount to complete in decimal format
+ * @property {string} orderId - ID of the order to complete
+ */
+export interface CompleteRequest {
+	amount: number
+	orderId: string
+}
+
+/**
  * Request parameters for automatic payment
  * @interface AutoPayRequired
  * @property {string} cardUuid - Unique identifier of the saved card
@@ -141,7 +152,7 @@ export interface CardDetails {
  * @interface Transaction
  * @property {string} uuid - Unique identifier for the transaction
  * @property {string} createdDate - Transaction creation timestamp
- * @property {string} status - Current status of the transaction
+ * @property {Status} status - Current status of the transaction
  * @property {string} channel - Payment channel used
  * @property {string} channelType - Type of payment channel
  * @property {string} requestRrn - Request reference number
@@ -158,7 +169,7 @@ export interface CardDetails {
 export interface Transaction {
 	uuid: string
 	createdDate: string
-	status: string
+	status: Status
 	channel: string
 	channelType: string
 	requestRrn: string
@@ -191,7 +202,7 @@ export interface Transaction {
 export interface OrderInfo {
 	orderId: string
 	amount: number
-	currencyType: string
+	currencyType: Currency
 	merchantName: string
 	operationType: string
 	paymentStatus: string
@@ -305,10 +316,10 @@ export class PayriffSDK {
 
 	/**
 	 * Completes a pre-authorized payment
-	 * @param {RefundRequest} request - Completion parameters
+	 * @param {CompleteRequest} request - Completion parameters
 	 * @returns {Promise<PayriffResponse<void>>} Completion operation result
 	 */
-	async complete(request: RefundRequest): Promise<PayriffResponse<void>> {
+	async complete(request: CompleteRequest): Promise<PayriffResponse<void>> {
 		return this.makeRequest<void>('/complete', 'POST', request)
 	}
 
@@ -370,8 +381,10 @@ export const PayriffTypes = {
 	Languages: ['AZ', 'EN', 'RU'] as const,
 	Currencies: ['AZN', 'USD', 'EUR'] as const,
 	Operations: ['PURCHASE', 'PRE_AUTH'] as const,
+	Statuses: ['APPROVED', 'DECLINED', 'CANCELED', 'EXPIRED'] as const,
 } as const
 
 export type Language = (typeof PayriffTypes.Languages)[number]
 export type Currency = (typeof PayriffTypes.Currencies)[number]
 export type Operation = (typeof PayriffTypes.Operations)[number]
+export type Status = (typeof PayriffTypes.Statuses)[number]
