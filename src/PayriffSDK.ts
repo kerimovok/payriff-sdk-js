@@ -165,6 +165,7 @@ export interface CardDetails {
  * @property {object} installment - Installment payment details
  * @property {string | null} installment.type - Type of installment
  * @property {string | null} installment.period - Installment period
+ * @property {string | null} deliveryAddress - Delivery address (if available)
  */
 export interface Transaction {
 	uuid: string
@@ -183,15 +184,18 @@ export interface Transaction {
 		type: string | null
 		period: string | null
 	}
+	deliveryAddress: string | null
 }
 
 /**
  * Detailed information about an order
  * @interface OrderInfo
  * @property {string} orderId - Unique identifier of the order
+ * @property {string} invoiceUuid - Unique identifier of the order (if available)
  * @property {number} amount - Total amount of the order
  * @property {string} currencyType - Currency code used for the order
  * @property {string} merchantName - Name of the merchant
+ * @property {number} commissionRate - Commission rate for the order
  * @property {string} operationType - Type of payment operation
  * @property {string} paymentStatus - Current status of the payment
  * @property {boolean} auto - Whether this was an automatic payment
@@ -201,15 +205,17 @@ export interface Transaction {
  */
 export interface OrderInfo {
 	orderId: string
+	invoiceUuid: string | null
 	amount: number
 	currencyType: Currency
 	merchantName: string
+	commissionRate?: number
 	operationType: string
 	paymentStatus: string
 	auto: boolean
 	createdDate: string
 	description: string
-	transactions: Transaction[]
+	transactions?: Transaction[]
 }
 
 /**
@@ -354,7 +360,7 @@ export class PayriffSDK {
 /**
  * Response codes from Payriff API
  */
-export const PayriffResultCodes = {
+export const ResultCodes = {
 	/** Operation completed successfully */
 	SUCCESS: '00000',
 	/** Gateway success */
@@ -377,24 +383,36 @@ export const PayriffResultCodes = {
 	INVALID_TOKEN: '14014',
 } as const
 
-export const PayriffTypes = {
-	Languages: ['AZ', 'EN', 'RU'] as const,
-	Currencies: ['AZN', 'USD', 'EUR'] as const,
-	Operations: ['PURCHASE', 'PRE_AUTH'] as const,
-	Statuses: [
-		'CREATED',
-		'APPROVED',
-		'CANCELED',
-		'DECLINED',
-		'REFUNDED',
-		'PREAUTH_APPROVED',
-		'EXPIRED',
-		'REVERSE',
-		'PARTIAL_REFUND',
-	] as const,
+export const Operation = {
+	PURCHASE: 'PURCHASE',
+	PRE_AUTH: 'PRE_AUTH',
 } as const
 
-export type Language = (typeof PayriffTypes.Languages)[number]
-export type Currency = (typeof PayriffTypes.Currencies)[number]
-export type Operation = (typeof PayriffTypes.Operations)[number]
-export type Status = (typeof PayriffTypes.Statuses)[number]
+export const Language = {
+	AZ: 'AZ',
+	EN: 'EN',
+	RU: 'RU',
+} as const
+
+export const Currency = {
+	AZN: 'AZN',
+	USD: 'USD',
+	EUR: 'EUR',
+} as const
+
+export const Status = {
+	CREATED: 'CREATED',
+	APPROVED: 'APPROVED',
+	CANCELED: 'CANCELED',
+	DECLINED: 'DECLINED',
+	REFUNDED: 'REFUNDED',
+	PREAUTH_APPROVED: 'PREAUTH_APPROVED',
+	EXPIRED: 'EXPIRED',
+	REVERSE: 'REVERSE',
+	PARTIAL_REFUND: 'PARTIAL_REFUND',
+} as const
+
+export type Operation = (typeof Operation)[keyof typeof Operation]
+export type Language = (typeof Language)[keyof typeof Language]
+export type Currency = (typeof Currency)[keyof typeof Currency]
+export type Status = (typeof Status)[keyof typeof Status]

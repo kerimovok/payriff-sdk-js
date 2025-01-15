@@ -73,12 +73,12 @@ const order = await payriff.createOrder({
 ```typescript
 const order = await payriff.createOrder({
 	amount: 10.99,
-	language: 'EN', // optional, defaults to 'AZ'
-	currency: 'USD', // optional, defaults to 'AZN'
+	language: Language.EN, // optional, defaults to Language.AZ
+	currency: Currency.USD, // optional, defaults to Currency.AZN
 	description: 'Product purchase',
-	callbackUrl: 'https://example.com/webhook', // optional, defaults to PAYRIFF_CALLBACK_URL environment variable
-	cardSave: true, // optional, defaults to false
-	operation: 'PURCHASE', // optional, defaults to 'PURCHASE'
+	callbackUrl: 'https://example.com/webhook',
+	cardSave: true,
+	operation: Operation.PURCHASE, // optional, defaults to Operation.PURCHASE
 })
 ```
 
@@ -132,10 +132,10 @@ const autoPay = await payriff.autoPay({
 const autoPay = await payriff.autoPay({
 	cardUuid: 'CARD_UUID',
 	amount: 10.99,
-	currency: 'USD', // optional, defaults to 'AZN'
+	currency: Currency.USD, // optional, defaults to Currency.AZN
 	description: 'Subscription renewal',
-	callbackUrl: 'https://example.com/webhook', // optional, defaults to PAYRIFF_CALLBACK_URL environment variable
-	operation: 'PURCHASE', // optional, defaults to 'PURCHASE'
+	callbackUrl: 'https://example.com/webhook',
+	operation: Operation.PURCHASE, // optional, defaults to Operation.PURCHASE
 })
 ```
 
@@ -182,12 +182,26 @@ The SDK includes TypeScript definitions for all request and response types:
 -   `PayriffResponse<T>` - Generic API response wrapper
 -   `OrderPayload` - Created order details
 -   `OrderInfo` - Detailed order information
+    -   Present after creation:
+        -   `orderId` - Order identifier
+        -   `invoiceUuid` - Invoice identifier (can be null)
+        -   `amount` - Order amount
+        -   `currencyType` - Currency code
+        -   `merchantName` - Merchant name
+        -   `operationType` - Operation type
+        -   `paymentStatus` - Payment status
+        -   `auto` - Automatic payment flag
+        -   `createdDate` - Creation timestamp
+        -   `description` - Order description
+    -   Present after payment:
+        -   `commissionRate` - Commission rate
+        -   `transactions` - Array of transactions
 -   `Transaction` - Transaction details
 -   `CardDetails` - Payment card information
 
 ### Constants
 
--   `PayriffResultCodes` - API response codes
+-   `ResultCodes` - API response codes
 
     -   `SUCCESS`: '00000'
     -   `SUCCESS_GATEWAY`: '00'
@@ -200,10 +214,33 @@ The SDK includes TypeScript definitions for all request and response types:
     -   `TOKEN_NOT_PRESENT`: '14013'
     -   `INVALID_TOKEN`: '14014'
 
--   `PayriffTypes` - Available options
-    -   `Languages`: ['AZ', 'EN', 'RU']
-    -   `Currencies`: ['AZN', 'USD', 'EUR']
-    -   `Operations`: ['PURCHASE', 'PRE_AUTH']
+-   `Operation` - Payment operation types
+
+    -   `PURCHASE`: 'PURCHASE'
+    -   `PRE_AUTH`: 'PRE_AUTH'
+
+-   `Language` - Available languages
+
+    -   `AZ`: 'AZ'
+    -   `EN`: 'EN'
+    -   `RU`: 'RU'
+
+-   `Currency` - Available currencies
+
+    -   `AZN`: 'AZN'
+    -   `USD`: 'USD'
+    -   `EUR`: 'EUR'
+
+-   `Status` - Payment statuses
+    -   `CREATED`: 'CREATED'
+    -   `APPROVED`: 'APPROVED'
+    -   `CANCELED`: 'CANCELED'
+    -   `DECLINED`: 'DECLINED'
+    -   `REFUNDED`: 'REFUNDED'
+    -   `PREAUTH_APPROVED`: 'PREAUTH_APPROVED'
+    -   `EXPIRED`: 'EXPIRED'
+    -   `REVERSE`: 'REVERSE'
+    -   `PARTIAL_REFUND`: 'PARTIAL_REFUND'
 
 ### Response Structure
 
