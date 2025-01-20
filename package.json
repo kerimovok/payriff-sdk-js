@@ -14,7 +14,7 @@
 	"homepage": "https://github.com/kerimovok/payriff-sdk-js",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/kerimovok/payriff-sdk-js.git"
+		"url": "git+https://github.com/kerimovok/payriff-sdk-js.git"
 	},
 	"license": "MIT",
 	"description": "An unofficial TypeScript/JavaScript SDK for integrating with the Payriff payment gateway.",
